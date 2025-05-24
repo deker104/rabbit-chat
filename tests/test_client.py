@@ -1,16 +1,16 @@
-import asyncio
-from unittest.mock import AsyncMock, MagicMock, call, ANY
+from unittest.mock import MagicMock, ANY
 
 import pytest
 from pika.channel import Channel
-from pika.frame import Method
-from pika.spec import Basic, Queue
+from pika.spec import Basic
 
 from rabbit_chat.client import ChatClient
+
 
 @pytest.fixture
 def message_callback():
     return MagicMock()
+
 
 @pytest.fixture
 def client(message_callback):
@@ -18,8 +18,9 @@ def client(message_callback):
         server_url="amqp://localhost:5672",
         username="test_user",
         initial_channel="test_channel",
-        message_callback=message_callback
+        message_callback=message_callback,
     )
+
 
 @pytest.mark.asyncio
 async def test_send_message(client):
@@ -33,10 +34,11 @@ async def test_send_message(client):
     call_args = client._channel.basic_publish.call_args[1]
     assert call_args["exchange"] == "chat"
     assert call_args["routing_key"] == "test_channel"
-    
+
     message_body = call_args["body"].decode()
     assert "test_user" in message_body
     assert test_message in message_body
+
 
 @pytest.mark.asyncio
 async def test_switch_channel(client):
@@ -46,11 +48,8 @@ async def test_switch_channel(client):
     new_channel = "new_channel"
     await client.switch_channel(new_channel)
 
-    client._channel.queue_declare.assert_called_once_with(
-        queue='',
-        exclusive=True,
-        callback=ANY
-    )
+    client._channel.queue_declare.assert_called_once_with(queue="", exclusive=True, callback=ANY)
+
 
 @pytest.mark.asyncio
 async def test_message_callback(client, message_callback):
@@ -61,11 +60,8 @@ async def test_message_callback(client, message_callback):
 
     client._on_message(channel, method, properties, body)
 
-    message_callback.assert_called_once_with(
-        "test_channel",
-        "sender",
-        "test message"
-    )
+    message_callback.assert_called_once_with("test_channel", "sender", "test message")
+
 
 @pytest.mark.asyncio
 async def test_queue_declared_callback(client):
@@ -77,8 +73,5 @@ async def test_queue_declared_callback(client):
     client._on_queue_declared(queue_name, channel_name)
 
     client._channel.queue_bind.assert_called_once_with(
-        queue=queue_name,
-        exchange='chat',
-        routing_key=channel_name,
-        callback=ANY
-    ) 
+        queue=queue_name, exchange="chat", routing_key=channel_name, callback=ANY
+    )

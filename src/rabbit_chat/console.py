@@ -10,6 +10,7 @@ from .client import ChatClient
 
 logger = logging.getLogger(__name__)
 
+
 class ChatConsole:
     def __init__(self, client: ChatClient):
         self.client = client
@@ -52,32 +53,31 @@ class ChatConsole:
         finally:
             await self.client.close()
 
+
 def generate_random_username() -> str:
     return f"anon{random.randint(100000, 999999)}"
+
 
 def main() -> None:
     parser = ArgumentParser(description="RabbitMQ Chat Client")
     parser.add_argument(
         "--server",
         default="127.0.0.1:5672",
-        help="RabbitMQ server address (default: 127.0.0.1:5672)"
+        help="RabbitMQ server address (default: 127.0.0.1:5672)",
     )
     parser.add_argument(
-        "--channel",
-        default="general",
-        help="Initial chat channel (default: general)"
+        "--channel", default="general", help="Initial chat channel (default: general)"
     )
     parser.add_argument(
         "--user",
         default=generate_random_username(),
-        help="Username (default: random anon username)"
+        help="Username (default: random anon username)",
     )
 
     args = parser.parse_args()
 
     logging.basicConfig(
-        level=logging.WARNING,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        level=logging.WARNING, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     client = ChatClient(
@@ -86,18 +86,17 @@ def main() -> None:
         initial_channel=args.channel,
         message_callback=lambda c, u, m: asyncio.create_task(
             ChatConsole(None).display_message(c, u, m)
-        )
+        ),
     )
 
     console = ChatConsole(client)
-    client.message_callback = lambda c, u, m: asyncio.create_task(
-        console.display_message(c, u, m)
-    )
+    client.message_callback = lambda c, u, m: asyncio.create_task(console.display_message(c, u, m))
 
     try:
         asyncio.run(console.run())
     except KeyboardInterrupt:
         pass
 
+
 if __name__ == "__main__":
-    main() 
+    main()

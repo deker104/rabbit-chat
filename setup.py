@@ -15,6 +15,8 @@ setup(
             "pytest>=8.3.5",
             "pytest-asyncio>=0.26.0",
             "pytest-mock>=3.14.0",
+            "flake8>=7.1.1",
+            "black>=25.1.0",
         ],
     },
     entry_points={
@@ -33,6 +35,7 @@ setup(
         "Development Status :: 3 - Alpha",
         "Intended Audience :: End Users/Desktop",
         "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.12",
     ],
-) 
+)

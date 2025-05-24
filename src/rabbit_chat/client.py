@@ -3,13 +3,13 @@ import json
 import logging
 from typing import Callable, Optional
 
-import pika
 from pika.adapters.asyncio_connection import AsyncioConnection
 from pika.channel import Channel
-from pika.connection import Parameters, URLParameters
+from pika.connection import URLParameters
 from pika.spec import Basic, BasicProperties
 
 logger = logging.getLogger(__name__)
+
 
 class ChatClient:
     def __init__(
@@ -21,18 +21,18 @@ class ChatClient:
     ):
         """
         Initialize the chat client.
-        
+
         Args:
             server_url: RabbitMQ server URL (amqp://host:port)
             username: User's name in the chat
             initial_channel: Initial chat channel to join
             message_callback: Callback function for received messages (channel, username, message)
         """
-        self.server_url = server_url if server_url.startswith('amqp://') else f'amqp://{server_url}'
+        self.server_url = server_url if server_url.startswith("amqp://") else f"amqp://{server_url}"
         self.username = username
         self.current_channel = initial_channel
         self.message_callback = message_callback
-        
+
         self._connection: Optional[AsyncioConnection] = None
         self._channel: Optional[Channel] = None
         self._consumer_tag: Optional[str] = None
@@ -65,9 +65,9 @@ class ChatClient:
         self._channel = channel
         channel.add_on_close_callback(self._on_channel_closed)
         channel.exchange_declare(
-            exchange='chat',
-            exchange_type='topic',
-            callback=lambda _: self._join_channel(self.current_channel)
+            exchange="chat",
+            exchange_type="topic",
+            callback=lambda _: self._join_channel(self.current_channel),
         )
 
     def _on_channel_closed(self, channel: Channel, reason: Exception) -> None:
@@ -83,9 +83,9 @@ class ChatClient:
             return
 
         self._channel.queue_declare(
-            queue='',
+            queue="",
             exclusive=True,
-            callback=lambda frame: self._on_queue_declared(frame.method.queue, channel_name)
+            callback=lambda frame: self._on_queue_declared(frame.method.queue, channel_name),
         )
 
     def _on_queue_declared(self, queue_name: str, channel_name: str) -> None:
@@ -98,9 +98,9 @@ class ChatClient:
 
         self._channel.queue_bind(
             queue=queue_name,
-            exchange='chat',
+            exchange="chat",
             routing_key=channel_name,
-            callback=lambda _: self._start_consuming(queue_name)
+            callback=lambda _: self._start_consuming(queue_name),
         )
         self.current_channel = channel_name
 
@@ -110,26 +110,18 @@ class ChatClient:
             return
 
         self._consumer_tag = self._channel.basic_consume(
-            queue=queue_name,
-            on_message_callback=self._on_message,
-            auto_ack=True
+            queue=queue_name, on_message_callback=self._on_message, auto_ack=True
         )
         self._connected.set()
 
     def _on_message(
-        self,
-        channel: Channel,
-        method: Basic.Deliver,
-        properties: BasicProperties,
-        body: bytes
+        self, channel: Channel, method: Basic.Deliver, properties: BasicProperties, body: bytes
     ) -> None:
         """Called when a message is received."""
         try:
             message_data = json.loads(body.decode())
             self.message_callback(
-                self.current_channel,
-                message_data['username'],
-                message_data['message']
+                self.current_channel, message_data["username"], message_data["message"]
             )
         except Exception as e:
             logger.error(f"Error processing message: {e}")
@@ -145,14 +137,11 @@ class ChatClient:
         if not self._channel or not self._channel.is_open:
             return
 
-        message_data = {
-            'username': self.username,
-            'message': message
-        }
+        message_data = {"username": self.username, "message": message}
         self._channel.basic_publish(
-            exchange='chat',
+            exchange="chat",
             routing_key=self.current_channel,
-            body=json.dumps(message_data).encode()
+            body=json.dumps(message_data).encode(),
         )
 
     async def wait_for_connection(self) -> None:
@@ -163,4 +152,4 @@ class ChatClient:
         """Close the connection."""
         self._closing = True
         if self._connection and not self._connection.is_closed:
-            self._connection.close() 
+            self._connection.close()
