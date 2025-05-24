@@ -20,7 +20,7 @@ A simple console-based chat application using RabbitMQ for message routing.
 ### Option 1: Install using pipx (recommended)
 
 ```bash
-pipx install https://github.com/deker104/rabbit-chat.git
+pipx install git+https://github.com/deker104/rabbit-chat.git#egg=rabbit-chat
 ```
 
 ### Option 2: Install from source
@@ -31,7 +31,9 @@ git clone https://github.com/deker104/rabbit-chat.git
 cd rabbit-chat
 ```
 
-2. Install in development mode:
+2. (Optional) Create and activate venv
+
+3. Install in development mode:
 ```bash
 pip install -e .[dev]
 ```
