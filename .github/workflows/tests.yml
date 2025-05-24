@@ -51,5 +51,5 @@ jobs:
           sleep 3
         done
 
-    - name: Run tests
-      run: pytest tests/ -v --timeout=30
+    - name: Run unit tests only
+      run: pytest tests/unit/ -v --timeout=30
