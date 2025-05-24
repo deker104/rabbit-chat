@@ -38,6 +38,8 @@ class ChatClient:
         self._consumer_tag: Optional[str] = None
         self._connected = asyncio.Event()
         self._closing = False
+        self._ready = asyncio.Event()
+        self._error = None
 
     async def connect(self) -> None:
         """Connect to the RabbitMQ server."""
@@ -45,12 +47,22 @@ class ChatClient:
         self._connection = AsyncioConnection(
             parameters,
             on_open_callback=self._on_connection_open,
+            on_open_error_callback=self._on_connection_open_error,
             on_close_callback=self._on_connection_closed,
         )
+        await self._ready.wait()
+        if self._error:
+            raise self._error
+
+    def _on_connection_open_error(self, connection: AsyncioConnection, reason: Exception) -> None:
+        """Called when the connection fails to open."""
+        self._ready.set()
+        self._error = ConnectionError(f"Failed to connect to RabbitMQ server: {reason}")
 
     def _on_connection_open(self, connection: AsyncioConnection) -> None:
         """Called when the connection is established."""
         logger.info("Connection opened")
+        self._ready.set()
         connection.channel(on_open_callback=self._on_channel_open)
 
     def _on_connection_closed(self, connection: AsyncioConnection, reason: Exception) -> None:

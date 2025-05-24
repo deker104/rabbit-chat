@@ -96,6 +96,10 @@ def main() -> None:
         asyncio.run(console.run())
     except KeyboardInterrupt:
         pass
+    except ConnectionError as e:
+        print(f"\nError: {e}")
+        print("Please make sure the RabbitMQ server is running and try again.")
+        exit(1)
 
 
 if __name__ == "__main__":
