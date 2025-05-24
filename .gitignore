@@ -45,3 +45,4 @@ rabbitmq_data/
 # Logs
 *.log
 logs/ 
+log.txt
