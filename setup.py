@@ -8,7 +8,7 @@ setup(
     python_requires=">=3.12",
     install_requires=[
         "pika>=1.3.2",
-        "aioconsole>=0.8.1",
+        "prompt-toolkit>=3.0.51",
     ],
     extras_require={
         "dev": [

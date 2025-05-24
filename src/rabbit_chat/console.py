@@ -4,7 +4,8 @@ import random
 from argparse import ArgumentParser
 from typing import NoReturn
 
-from aioconsole import ainput, aprint
+from prompt_toolkit import PromptSession
+from prompt_toolkit.patch_stdout import patch_stdout
 
 from .client import ChatClient
 
@@ -15,43 +16,49 @@ class ChatConsole:
     def __init__(self, client: ChatClient):
         self.client = client
         self._running = True
+        self._session = PromptSession()
 
     async def display_message(self, channel: str, username: str, message: str) -> None:
-        await aprint(f"[{channel}] {username}: {message}")
+        print(f"[{channel}] {username}: {message}")
 
     async def input_loop(self) -> NoReturn:
         await self.client.wait_for_connection()
-        await aprint(f"Connected to chat as {self.client.username}")
-        await aprint(f"Current channel: {self.client.current_channel}")
-        await aprint("Type !switch <channel> to switch channels or !quit to exit")
+        print(f"Connected to chat as {self.client.username}")
+        print(f"Current channel: {self.client.current_channel}")
+        print("Type !switch <channel> to switch channels or !quit to exit")
 
         while self._running:
             try:
-                message = await ainput("> ")
+                message = await self._session.prompt_async("> ")
                 if not message:
                     continue
 
                 if message.startswith("!switch "):
                     channel = message[8:].strip()
                     if not channel:
-                        await aprint("Usage: !switch <channel>")
+                        print("Usage: !switch <channel>")
                         continue
                     await self.client.switch_channel(channel)
-                    await aprint(f"Switched to channel: {channel}")
+                    print(f"Switched to channel: {channel}")
                 elif message == "!quit":
                     self._running = False
                 else:
                     await self.client.send_message(message)
+            except KeyboardInterrupt:
+                self._running = False
+            except EOFError:
+                self._running = False
             except Exception as e:
                 logger.error(f"Error in input loop: {e}")
 
     async def run(self) -> None:
         """Run the console interface."""
-        try:
-            await self.client.connect()
-            await self.input_loop()
-        finally:
-            await self.client.close()
+        with patch_stdout():
+            try:
+                await self.client.connect()
+                await self.input_loop()
+            finally:
+                await self.client.close()
 
 
 def generate_random_username() -> str:
