@@ -28,18 +28,21 @@ class ChatClient:
             initial_channel: Initial chat channel to join
             message_callback: Callback function for received messages (channel, username, message)
         """
+        # Ensure server URL has the correct AMQP protocol prefix
         self.server_url = server_url if server_url.startswith("amqp://") else f"amqp://{server_url}"
         self.username = username
         self.current_channel = initial_channel
         self.message_callback = message_callback
 
+        # Internal state management
         self._connection: Optional[AsyncioConnection] = None
         self._channel: Optional[Channel] = None
         self._consumer_tag: Optional[str] = None
-        self._connected = asyncio.Event()
-        self._closing = False
-        self._ready = asyncio.Event()
-        self._error = None
+        # Event flags for managing asynchronous state
+        self._connected = asyncio.Event()  # Indicates when client is ready to send/receive messages
+        self._closing = False  # Flag to prevent reconnection attempts during intentional shutdown
+        self._ready = asyncio.Event()  # Indicates when initial connection is established
+        self._error = None  # Stores connection errors if they occur
 
     async def connect(self) -> None:
         """Connect to the RabbitMQ server."""
@@ -95,8 +98,8 @@ class ChatClient:
             return
 
         self._channel.queue_declare(
-            queue="",
-            exclusive=True,
+            queue="",  # Empty name lets RabbitMQ generate a unique queue name
+            exclusive=True,  # Queue will be deleted when connection closes
             callback=lambda frame: self._on_queue_declared(frame.method.queue, channel_name),
         )
 
@@ -105,6 +108,7 @@ class ChatClient:
         if not self._channel:
             return
 
+        # Cancel existing consumer before setting up new one
         if self._consumer_tag:
             self._channel.basic_cancel(self._consumer_tag)
 
