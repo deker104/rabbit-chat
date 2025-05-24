@@ -4,6 +4,7 @@ from rabbit_chat.client import ChatClient
 
 
 @pytest.mark.asyncio
+@pytest.mark.timeout(10)
 async def test_connect_and_close():
     client = ChatClient(
         server_url="amqp://localhost:5672",
@@ -22,6 +23,7 @@ async def test_connect_and_close():
 
 
 @pytest.mark.asyncio
+@pytest.mark.timeout(10)
 async def test_end_to_end_send_and_receive():
     callback = MagicMock()
     client = ChatClient(
@@ -38,6 +40,7 @@ async def test_end_to_end_send_and_receive():
 
 
 @pytest.mark.asyncio
+@pytest.mark.timeout(10)
 async def test_switch_channel_binds_queue():
     client = ChatClient(
         server_url="amqp://localhost:5672",

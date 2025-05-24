@@ -4,6 +4,7 @@ from rabbit_chat.console import ChatConsole
 
 
 @pytest.mark.asyncio
+@pytest.mark.timeout(5)
 async def test_display_message():
     console = ChatConsole(client=MagicMock())
     with patch("rabbit_chat.console.aprint") as mock_aprint:
@@ -12,6 +13,7 @@ async def test_display_message():
 
 
 @pytest.mark.asyncio
+@pytest.mark.timeout(5)
 async def test_input_loop_quit():
     client = AsyncMock()
     client.username = "test_user"
@@ -27,6 +29,7 @@ async def test_input_loop_quit():
 
 
 @pytest.mark.asyncio
+@pytest.mark.timeout(5)
 async def test_input_loop_switch_channel():
     client = AsyncMock()
     client.username = "test_user"
@@ -42,6 +45,7 @@ async def test_input_loop_switch_channel():
 
 
 @pytest.mark.asyncio
+@pytest.mark.timeout(5)
 async def test_input_loop_send_message():
     client = AsyncMock()
     client.username = "test_user"

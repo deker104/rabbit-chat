@@ -21,6 +21,7 @@ def client(dummy_callback):
 
 
 @pytest.mark.asyncio
+@pytest.mark.timeout(5)
 async def test_send_message(client):
     client._channel = MagicMock(spec=Channel)
     client._channel.is_open = True
@@ -34,6 +35,7 @@ async def test_send_message(client):
 
 
 @pytest.mark.asyncio
+@pytest.mark.timeout(5)
 async def test_switch_channel(client):
     client._channel = MagicMock(spec=Channel)
     client._channel.is_open = True
@@ -43,6 +45,7 @@ async def test_switch_channel(client):
         mock_join.assert_called_once_with("another_room")
 
 
+@pytest.mark.timeout(2)
 def test_on_message(client, dummy_callback):
     body = b'{"username": "alice", "message": "hi!"}'
     method = Basic.Deliver(routing_key="room")
