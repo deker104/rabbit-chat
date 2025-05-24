@@ -17,23 +17,23 @@ A simple console-based chat application using RabbitMQ for message routing.
 
 ## Installation
 
-### Option 1: Install from PyPI (recommended)
+### Option 1: Install using pipx (recommended)
 
 ```bash
-pip install rabbit-chat
+pipx install https://github.com/deker104/rabbit-chat.git
 ```
 
 ### Option 2: Install from source
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/deker104/rabbit-chat.git
 cd rabbit-chat
 ```
 
 2. Install in development mode:
 ```bash
-pip install -e .
+pip install -e .[dev]
 ```
 
 ## Running the Chat Server
@@ -76,21 +76,6 @@ rchat --server localhost:5672 --channel mychannel --user myusername
 pip install -e ".[dev]"  # Install development dependencies
 pytest tests/
 ```
-
-## Architecture
-
-The chat system consists of two main components:
-
-1. RabbitMQ Server
-   - Handles message routing between clients
-   - Uses topic exchange for channel-based message distribution
-   - Runs in Docker for easy deployment
-
-2. Python Client
-   - Asynchronous design using `pika`'s async adapter
-   - Clean separation between chat logic (`ChatClient`) and UI (`ChatConsole`)
-   - Easily testable with mock objects
-   - Support for multiple channels via RabbitMQ topic exchange
 
 ## Development
 
