@@ -3,7 +3,6 @@ from unittest.mock import MagicMock, patch
 from rabbit_chat.client import ChatClient
 
 
-
 @pytest.mark.asyncio
 async def test_connect_and_close():
     client = ChatClient(
